@@ -1,6 +1,6 @@
 #include "NormalDistribution.h"
 
-void NormalDistribution::generate(unsigned char mean, std::string path) {
+void NormalDistribution::generate(const int & mean, const std::string & path) {
     // Mean
     unsigned char meanValue = mean;
 

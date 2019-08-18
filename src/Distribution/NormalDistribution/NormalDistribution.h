@@ -3,10 +3,10 @@
 #include <string>
 #include <climits>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <fstream>
 
 class NormalDistribution {
     public:
-        void generate(unsigned char mean, std::string path);
+        static void generate(const int & mean, const std::string & path);
 };

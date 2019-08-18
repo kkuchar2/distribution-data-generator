@@ -11,10 +11,6 @@
 class DistributionGenerator {
 
     public:
-        static void generateUniformDistribution(const char * outputDistributionFile) {
-            std::unique_ptr<UniformDistribution> distribution(new UniformDistribution());
-            distribution->generate(outputDistributionFile);
-        }
 
         static void generateNormalDistribution(const char * outputDistributionFile, char * argv[], int & numberOfParameters) {
             // Default mean
@@ -44,9 +40,9 @@ class DistributionGenerator {
             }
         }
 
-        static void generateDataFromDistributionFile(const char * distributionFilename, const char * outputDataFile, const char * numberOfSamples) {
+        static void generateDataFromDistributionFile(const std::string & distributionFilename, const std::string & outputDataFile, unsigned int sampleCount) {
             std::unique_ptr<Data> data(new Data());
-            data->generateFromDistribution(distributionFilename, std::stoi(numberOfSamples));
+            data->generateFromDistribution(distributionFilename, sampleCount);
             data->saveToFile(outputDataFile);
         }
 };

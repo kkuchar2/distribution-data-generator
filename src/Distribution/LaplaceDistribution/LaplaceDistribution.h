@@ -8,5 +8,5 @@
 
 class LaplaceDistribution {
     public:
-        void generate(unsigned char mean, std::string path);
+        static void generate(const int & mean, const std::string & path);
 };

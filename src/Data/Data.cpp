@@ -7,7 +7,7 @@ void Data::initWithArray(unsigned char * data, int size) {
     symbols.assign(data, data + size);
 }
 
-void Data::saveToFile(std::string path) {
+void Data::saveToFile(const std::string & path) {
     std::ofstream out(path, std::ofstream::binary);
 
     // Fill output file with chars generated from symbols
@@ -18,7 +18,7 @@ void Data::saveToFile(std::string path) {
     out.close();
 }
 
-void Data::readFromFile(std::string path) {
+void Data::readFromFile(const std::string & path) {
     std::ifstream f(path, std::ios::binary | std::ios::in);
 
     char c;
@@ -29,7 +29,7 @@ void Data::readFromFile(std::string path) {
     f.close();
 }
 
-void Data::generateFromDistribution(std::string path, int size) {
+void Data::generateFromDistribution(const std::string & path, unsigned int size) {
 
     // Check if file exists
     if (!fileExists(path.c_str())) {
@@ -87,7 +87,7 @@ bool Data::compare(const std::unique_ptr<Data> & data) {
 
     std::cout << "Comparing data..." << std::endl << std::endl;
 
-    for (int i = 0; i < size; i++) {
+    for (unsigned int i = 0; i < size; i++) {
         std::cout << "[" << i << "] First data: " << static_cast<int>(symbols[i]) << " Second data: " << static_cast<int>(otherSymbols[i]) << std::endl;
         if (symbols[i] != otherSymbols[i]) {
             identical = false;

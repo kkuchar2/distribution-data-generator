@@ -7,5 +7,5 @@
 
 class UniformDistribution {
     public:
-        void generate(std::string path);
+        static void generate(const std::string & path);
 };

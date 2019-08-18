@@ -1,6 +1,6 @@
 #include "LaplaceDistribution.h"
 
-void LaplaceDistribution::generate(unsigned char mean, std::string path) {
+void LaplaceDistribution::generate(const int & mean, const std::string & path) {
     auto meanValue = static_cast<double>(mean);
 
     // Average half width of distribution

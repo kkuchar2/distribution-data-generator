@@ -1,6 +1,6 @@
 #include "UniformDistribution.h"
 
-void UniformDistribution::generate(std::string path) {
+void UniformDistribution::generate(const std::string & path) {
     std::ofstream out(path);
 
     for (unsigned char x = 0; x < UCHAR_MAX; x++) {
