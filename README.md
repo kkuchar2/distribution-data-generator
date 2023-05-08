@@ -49,7 +49,7 @@ This is simple project implementing generation of files:
 1. Clone the repo
 
   ```sh
-  git clone https://github.com/kkuchar2/distribi
+  git clone https://github.com/kkuchar2/distribution-data-generator
   ```
 
 2. Make sure you've installed Boost libraries on your machine
