@@ -1,32 +1,17 @@
 #include "LaplaceDistribution.h"
 
-void LaplaceDistribution::generate(const int & mean, const std::string & path) {
-    auto meanValue = static_cast<double>(mean);
+void LaplaceDistribution::generate(double & mean, double & lambda, const std::string &outputDistributionFile)
+{
+    std::cout << "Generating Laplace distribution" << std::endl;
 
-    // Average half width of distribution
-    double average_bound_width = ((meanValue - 0) + (UCHAR_MAX - meanValue)) / 2;
+    std::vector<double> probabilities(UCHAR_MAX + 1);
 
-    // Standard deviation: 5x stddev rule = ~99.7% of distribution lies within range
-    double const lambda = average_bound_width / 5;
-
-    unsigned char x = 0;
-    double probability = 0.0;
-
-    std::vector<double> probabilities;
-    double sumOfProbabilities = 0.0;
-    do {
-        probability = 1.0 / (2.0 * lambda) * exp(-abs(static_cast<double>(x) - meanValue) / lambda);
-        probabilities.push_back(probability);
-        sumOfProbabilities += probability;
-    }
-    while (++x);
-
-    std::ofstream out(path);
-
-    // Normalize probabilities to range and save to file
-    for (size_t i = 0; i < probabilities.size(); i++) {
-        out << static_cast<int>(i) << " " << probabilities[i] / sumOfProbabilities << std::endl;
+    for (unsigned int x = 0; x <= UCHAR_MAX; ++x)
+    {
+        double probability = 1.0 / (2.0 * lambda) * exp(-std::abs(static_cast<double>(x) - mean) / lambda);
+        probabilities[x] = probability;
+        std::cout << "[" << x << "] = " << probability << std::endl;
     }
 
-    out.close();
+    writeToFile(outputDistributionFile, probabilities);
 }

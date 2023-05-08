@@ -1,6 +1,4 @@
 #include "Utilities/ArgumentProcessor.h"
-#include <boost/program_options.hpp>
-#include "TreeNode.h"
 
 int main(int argc, char * argv[]) {
 

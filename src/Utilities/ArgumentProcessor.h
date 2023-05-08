@@ -1,108 +1,151 @@
 #pragma once
 
-#include <boost/program_options.hpp>
+#include <stdexcept>
+#include <string>
+#include <iostream>
+#include <cxxopts.hpp>
 #include "../Distribution/DistributionGenerator.h"
 
-using namespace boost;
-namespace po = boost::program_options;
-
-class ArgumentProcessor {
-
+class ArgumentProcessor
+{
     public:
-
-        static void conflicting_options(const po::variables_map & vm, const char * opt1, const char * opt2) {
-            if (vm.count(opt1) && !vm[opt1].defaulted() && vm.count(opt2) && !vm[opt2].defaulted()) {
-                throw std::logic_error(std::string("Conflicting options '") + opt1 + "' and '" + opt2 + "'.");
+        static void checkOptionConflict(const cxxopts::ParseResult &args, const std::string &opt1, const std::string &opt2)
+        {
+            if (args.count(opt1) && !args[opt1].has_default() && args.count(opt2) && !args[opt2].has_default())
+            {
+                throw std::logic_error("Conflicting options '" + opt1 + "' and '" + opt2 + "'.");
             }
         }
 
-        static void
-        option_dependency(const po::variables_map & vm, const char * for_what, const char * required_option) {
-            if (vm.count(for_what) && !vm[for_what].defaulted()) {
-                if (vm.count(required_option) == 0 || vm[required_option].defaulted()) {
-                    throw std::logic_error(
-                            std::string("Option '") + for_what + "' requires option '" + required_option + "'.");
+        static void checkRequiredOption(const cxxopts::ParseResult &args, const std::string &for_what,
+                                        const std::string &required_option)
+        {
+            if (args.count(for_what) && !args[for_what].has_default())
+            {
+                if (args.count(required_option) == 0 || args[required_option].has_default())
+                {
+                    throw std::logic_error("Option '" + for_what + "' requires option '" + required_option + "'.");
                 }
             }
         }
 
-        static void param_presence(const po::variables_map & vm, const char * required_param) {
-            if (vm.count(required_param) == 0 || vm[required_param].defaulted()) {
-                throw std::logic_error(
-                        std::string("Parameter '") + required_param + "' is needed.");
+        static void assertOptionExists(const cxxopts::ParseResult &args, const std::string &required_param)
+        {
+            if (args.count(required_param) == 0 || args[required_param].has_default())
+            {
+                throw std::logic_error("Parameter '" + required_param + "' is needed.");
             }
         }
 
-        static std::string get_string(const po::variables_map & vm, const std::string & key) {
-            return vm[key].as<std::string>();
+        template<typename T>
+        static T get_value(const cxxopts::ParseResult &args, const std::string &key)
+        {
+            return args[key].as<T>();
         }
 
-        static int get_int(const po::variables_map & vm, const std::string & key) {
-            return vm[key].as<int>();
-        }
+        static void process(int argc, char *argv[])
+        {
+            cxxopts::Options options("Allowed options");
+            options.set_width(150);
 
-        static void process(int & argc, char * argv[]) {
+            options.add_options("Help")
+                    ("h,help", "Show help");
 
-            po::options_description optionsDescription("Allowed options");
+            options.add_options("Modes")
+                    ("g,generator", "Generation of file containing 256 numbers representing distribution", cxxopts::value<bool>())
+                    ("d,data", "Generate samples from distribution file", cxxopts::value<bool>());
 
-            optionsDescription.add_options()
+            options.add_options("Data Generation")
+                    ("i,input_file", "Input distribution file", cxxopts::value<std::string>())
+                    ("c,sample_count", "Number of samples to generate", cxxopts::value<int>());
 
-                    ("help,h", "show help")
-                    ("generator,g", "generate distribution file.")
-                    ("distribution,t", po::value<std::string>(), "distribution type [ uniform | normal | laplace ]")
-                    ("data,d", "generate data from distribution file")
-                    ("mean,m", po::value<int>(), "Mean for normal | laplace distribution")
-                    ("input_file,i", po::value<std::string>(), "Input distribution file")
-                    ("output_file,o", po::value<std::string>(), "Output file for distribution | data")
-                    ("sample_count,c", po::value<int>(), "Number of samples to generate")
+            options.add_options("Output")
+                    ("o,output_file", "Output file", cxxopts::value<std::string>());
 
-                    ;
+            options.add_options("Distribution Generation")
+                    ("t,distribution", "Distribution type [ uniform | normal | laplace ]", cxxopts::value<std::string>())
+                    ("m,mean", "Mean for normal | laplace distribution [double]", cxxopts::value<double>())
+                    ("s,standard_deviation", "Standard deviation for normal distribution", cxxopts::value<double>())
+                    ("l,lambda", "Scale parameter for Laplace distribution", cxxopts::value<double>());
 
-            po::variables_map vm;
-            po::store(po::command_line_parser(argc, argv).options(optionsDescription).run(), vm);
-            po::notify(vm);
+            auto args = options.parse(argc, argv);
 
-            if (vm.count("help")) {
+            if (args.count("help"))
+            {
                 std::cout << std::endl;
-                std::cout << "Usage: ddgenerator [options]\n";
+                std::cout << "Usage: distribution-generator [options]\n";
                 std::cout << std::endl;
-                std::cout << optionsDescription;
+                std::cout << options.help();
                 return;
             }
 
-            option_dependency(vm, "generator", "output_file");
-            option_dependency(vm, "generator", "distribution");
-            conflicting_options(vm, "data", "distribution");
+            // Make sure 'generator' and 'data' are not provided together
+            checkOptionConflict(args, "data", "distribution");
 
-            if (vm.count("generator")) {
+            if (args.count("generator"))
+            {
+                // Make sure 'generator' has 'distribution' and 'output_file' provided by the user
+                checkRequiredOption(args, "generator", "output_file");
+                checkRequiredOption(args, "generator", "distribution");
 
-                option_dependency(vm, "generator", "output_file");
+                auto outputFile = get_value<std::string>(args, "output_file");
+                auto distributionType = get_value<std::string>(args, "distribution");
 
-                auto outputFile = get_string(vm, "output_file");
-                auto distributionType = get_string(vm, "distribution");
-
-                if (distributionType == "laplace") {
-                    param_presence(vm, "mean");
-                    LaplaceDistribution::generate(get_int(vm, "mean"), outputFile);
+                if (distributionType == "laplace")
+                {
+                    // Laplace distribution requires 'mean' and 'lambda' parameters
+                    assertOptionExists(args, "mean");
+                    assertOptionExists(args, "lambda");
+                    auto mean = get_value<double>(args, "mean");
+                    auto lambda = get_value<double>(args, "lambda");
+                    DistributionGenerator::createLaplaceDistribution(outputFile, mean, lambda);
                 }
-                else if (distributionType == "normal") {
-                    param_presence(vm, "mean");
-                    NormalDistribution::generate(get_int(vm, "mean"), outputFile);
+                else if (distributionType == "normal")
+                {
+                    // Normal distribution requires 'mean' and 'standard_deviation' parameters
+                    assertOptionExists(args, "mean");
+                    assertOptionExists(args, "standard_deviation");
+                    auto mean = get_value<double>(args, "mean");
+                    auto standardDeviation = get_value<double>(args, "standard_deviation");
+
+                    // make sure there is no 'lambda' parameter
+                    if (args.count("lambda") && !args["lambda"].has_default())
+                    {
+                        throw std::logic_error("Normal distribution does not require 'lambda' parameter.");
+                    }
+
+                    DistributionGenerator::createNormalDistribution(outputFile, mean, standardDeviation);
                 }
-                else if (distributionType == "uniform") {
-                    UniformDistribution::generate(outputFile);
+                else if (distributionType == "uniform")
+                {
+                    DistributionGenerator::createUniformDistribution(outputFile);
+                }
+                else
+                {
+                    throw std::logic_error("Unknown distribution type: " + distributionType +
+                                           ". Please use one of [ uniform | normal | laplace ]");
                 }
             }
-            else if (vm.count("data")) {
-                option_dependency(vm, "data", "input_file");
-                option_dependency(vm, "data", "output_file");
-                option_dependency(vm, "data", "sample_count");
+            else if (args.count("data"))
+            {
+                // Make sure 'data' has 'input_file', 'output_file' and 'sample_count' provided by the user
+                checkRequiredOption(args, "data", "input_file");
+                checkRequiredOption(args, "data", "output_file");
+                checkRequiredOption(args, "data", "sample_count");
 
-                DistributionGenerator::generateDataFromDistributionFile(
-                        get_string(vm, "input_file"),
-                        get_string(vm, "output_file"),
-                        get_int(vm, "sample_count")
-                );
+                auto inputFile = get_value<std::string>(args, "input_file");
+                auto outputFile = get_value<std::string>(args, "output_file");
+                auto sampleCount = get_value<int>(args, "sample_count");
+
+                DistributionGenerator::generateSamplesFromDistributionFile(inputFile, outputFile, sampleCount);
+            }
+            else
+            {
+                std::cout << std::endl;
+                std::cout << "Usage: distribution-generator [options]\n";
+                std::cout << std::endl;
+                std::cout << options.help();
+                return;
             }
         }
 };

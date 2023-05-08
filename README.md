@@ -33,68 +33,68 @@
 * [About the Project](#about-the-project)
 * [Getting Started](#getting-started)
 * [Usage](#usage)
-* [Contributing](#contributing)
+* [Examples](#examples)
 * [License](#license)
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This is simple project implementing generation of files:
- - containing distribution data (laplace / normal / uniform)
- - data samples from distribution files
+This project provides a simple command-line tool for generating distribution files and data files based on those distributions. With this tool, you can easily generate files containing distribution data for Laplace, normal, or uniform distributions, and generate data samples from existing distribution files.
+
+To generate a distribution file, simply specify the distribution type (uniform, normal, or Laplace), mean (for normal and Laplace distributions), and any other necessary parameters (such as standard deviation for the normal distribution or scale parameter for the Laplace distribution). The tool will then generate a file containing 256 numbers representing the specified distribution.
+
+To generate data samples from a distribution file, specify the input distribution file and the number of samples to generate. The tool will generate a file containing the specified number of samples, drawn from the distribution specified in the input file.
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-1. Clone the repo
+Clone the repo
 
-  ```sh
-  git clone https://github.com/kkuchar2/distribution-data-generator
-  ```
-
-2. Make sure you've installed Boost libraries on your machine
-
-  ```sh
-    sudo apt-get install libboost-all-dev
-  ```
-
-3. Build executable
 ```sh
-  cd distribution-data-generator
-  mkdir build
-  cd build
-  cmake ..
-  make
+git clone https://github.com/kkuchar2/distribution-data-generator
 ```
 
-3. To show help run
+Make sure you've installed cxxopts library
+
 ```sh
-  ./ddgenerator -h
+sudo apt-get install libcxxopts-dev
+```
+
+Build executable
+```sh
+cd distribution-data-generator
+mkdir build
+cd build
+cmake ..
+make
 ```
 
 ## Usage
 
-
 ```sh
-  # Generate file with distribution data
-  ./ddgenerator --generator --distribution [laplace | normal | uniform] -output_file [OUT] --mean [MEAN]
+./distribution-generator [OPTIONS]
 
-  # Generate data samples using distribution file
-  ./ddgenerator --data --input_file [DISTRIBUTION_FILE] --output_file [OUT] --sample_count [SAMPLE_COUNT]
-
-  # Note:
-  --mean parameter is used for laplace and normal distribution only.
+-h, --help                      Show help
+-g, --generator                 Generate a file with distribution data
+-d, --data                      Generate data samples using distribution file
+-i, --input_file=INPUT          Input distribution file
+-c, --sample_count=COUNT        Number of samples to generate
+-o, --output_file=OUTPUT        Output file
+-t, --distribution=TYPE         Distribution type [uniform|normal|laplace]
+-m, --mean=MEAN                 Mean for normal or laplace distribution [double]
+-s, --standard_deviation=SD     Standard deviation for normal distribution
+-l, --lambda=SCALE              Scale parameter for Laplace distribution
 ```
+## Examples
+```sh
+Generate distribution file:
+./distribution-generator -g -o distribution.txt -t normal -m 0 -s 1
+./distribution-generator -g -o distribution.txt -t laplace -m 0 -l 1
+./distribution-generator -g -o distribution.txt -t uniform
 
-## Contributing
-
-Any contributions you make are **greatly appreciated**.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Generate data samples:
+./distribution-generator -d -i distribution.txt -o data.txt -c 1000
+```
 
 <!-- LICENSE -->
 ## License

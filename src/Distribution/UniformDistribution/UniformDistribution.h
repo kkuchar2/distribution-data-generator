@@ -4,8 +4,10 @@
 #include <climits>
 #include <iostream>
 #include <fstream>
+#include "../Distribution.h"
 
-class UniformDistribution {
+class UniformDistribution : protected Distribution
+{
     public:
-        static void generate(const std::string & path);
+        void generate(const std::string &outputDistributionFile);
 };
